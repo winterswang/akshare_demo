@@ -30,6 +30,10 @@ def download_a_stock_finance(code, save_dir):
         cash_flow = ak.stock_cash_flow_sheet_by_report_em(symbol=symbol)
         cash_flow.to_csv(f'{save_dir}/{code}_cash_flow.csv', encoding='utf-8-sig')
         
+        # 财务分析指标
+        financial_analysis = ak.stock_financial_analysis_indicator(symbol=code, start_year="2020")
+        financial_analysis.to_csv(f'{save_dir}/{code}_financial_analysis.csv', encoding='utf-8-sig')
+        
         print(f'成功下载A股 {code} 的财务数据')
     except Exception as e:
         print(f'下载A股 {code} 的财务数据失败: {str(e)}')
@@ -49,6 +53,10 @@ def download_hk_stock_finance(code, save_dir):
         cash_flow = ak.stock_financial_hk_report_em(stock=code, symbol='现金流量表', indicator='年度')
         cash_flow.to_csv(f'{save_dir}/{code}_cash_flow.csv', encoding='utf-8-sig')
         
+        # 财务分析指标
+        financial_analysis = ak.stock_financial_hk_analysis_indicator_em(symbol=code, indicator="年度")
+        financial_analysis.to_csv(f'{save_dir}/{code}_financial_analysis.csv', encoding='utf-8-sig')
+        
         print(f'成功下载港股 {code} 的财务数据')
     except Exception as e:
         print(f'下载港股 {code} 的财务数据失败: {str(e)}')
@@ -67,6 +75,10 @@ def download_us_stock_finance(code, save_dir):
         # 现金流量表
         cash_flow = ak.stock_financial_us_report_em(stock=code, symbol='现金流量表', indicator='年报')
         cash_flow.to_csv(f'{save_dir}/{code}_cash_flow.csv', encoding='utf-8-sig')
+        
+        # 财务分析指标
+        financial_analysis = ak.stock_financial_us_analysis_indicator_em(symbol=code, indicator="年报")
+        financial_analysis.to_csv(f'{save_dir}/{code}_financial_analysis.csv', encoding='utf-8-sig')
         
         print(f'成功下载美股 {code} 的财务数据')
     except Exception as e:
