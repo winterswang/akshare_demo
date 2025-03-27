@@ -21,15 +21,22 @@ def save_columns_to_txt(columns, output_file):
         print(f"保存文件 {output_file} 时发生错误：{str(e)}")
 
 def main():
-    # 获取第一个股票代码的文件（示例：000001）
-    stock_code = '000001'
+    # 获取A股和港股的示例股票代码
+    a_stock_code = '000001'
+    hk_stock_code = '00001'
     
     # 定义文件映射关系
     file_mappings = {
-        f'{stock_code}_balance_sheet.csv': 'balance_columns.txt',
-        f'{stock_code}_cash_flow.csv': 'cash_flow_columns.txt',
-        f'{stock_code}_financial_indicator.csv': 'financial_columns.txt',
-        f'{stock_code}_income_statement.csv': 'income_columns.txt'
+        # A股文件映射
+        f'{a_stock_code}_balance_sheet.csv': 'balance_columns.txt',
+        f'{a_stock_code}_cash_flow.csv': 'cash_flow_columns.txt',
+        f'{a_stock_code}_financial_indicator.csv': 'financial_columns.txt',
+        f'{a_stock_code}_income_statement.csv': 'income_columns.txt',
+        # 港股文件映射
+        f'{hk_stock_code}_hk_balance_sheet.csv': 'hk_balance_columns.txt',
+        f'{hk_stock_code}_hk_cash_flow.csv': 'hk_cash_flow_columns.txt',
+        f'{hk_stock_code}_hk_financial_indicator.csv': 'hk_financial_columns.txt',
+        f'{hk_stock_code}_hk_income_statement.csv': 'hk_income_columns.txt'
     }
     
     # 遍历处理每个文件

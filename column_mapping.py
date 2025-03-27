@@ -64,6 +64,63 @@ def process_numeric_columns(df):
             df[col] = df[col].apply(process_numeric_data)
     return df
 
+def process_hk_numeric_data(value):
+    """处理港股数值数据：整数转换为亿为单位，小数保留两位
+    支持处理：
+    1. 带逗号的数字 (如 1,234.56)
+    2. 科学计数法 (如 1.23e8)
+    3. 空值处理
+    4. 非数值型数据处理
+    """
+    try:
+        # 处理空值
+        if pd.isna(value) or value == '':
+            return value
+            
+        # 将输入转换为字符串并移除逗号
+        str_value = str(value).replace(',', '')
+        
+        # 判断是否包含小数点
+        if '.' not in str_value:
+            # 转换为浮点数并转换为亿为单位
+            num = float(str_value)
+            result = round(num / 100000000, 2)
+        else:
+            # 包含小数点，保留两位小数
+            num = float(str_value)
+            result = round(num, 2)
+        
+        # 处理极小值，避免显示为科学计数法
+        if abs(result) < 0.01 and result != 0:
+            return 0.01 if result > 0 else -0.01
+            
+        return result
+        
+    except (ValueError, TypeError):
+        # 如果无法转换为数值，则返回原值
+        return value
+
+def process_hk_numeric_columns(df):
+    """处理港股DataFrame中'日期类型代码'列之后的数值列
+    
+    Args:
+        df: pandas DataFrame对象
+    Returns:
+        处理后的DataFrame
+    """
+    date_index = -1
+    for i, col in enumerate(df.columns):
+        if '日期类型代码' in col:
+            date_index = i
+            break
+
+    if date_index != -1:
+        # 处理'日期类型代码'之后的数值列
+        numeric_columns = df.columns[date_index + 1:]
+        for col in numeric_columns:
+            df[col] = df[col].apply(process_hk_numeric_data)
+    return df
+
 def map_columns(df, mapping_dict):
     """根据映射字典转换DataFrame的列名，并只保留有映射关系且非空的列，同时处理数值列"""
     # 获取有映射关系的列
