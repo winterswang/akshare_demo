@@ -22,25 +22,60 @@ def download_financial_data(stock_code):
     stock_code = stock_code.zfill(5)
     
     # 加载映射文件
-    balance_mapping = load_mapping_file('api_txt/format/balance_mapping.txt')
-    cash_mapping = load_mapping_file('api_txt/format/cash_mapping.txt')
-    income_mapping = load_mapping_file('api_txt/format/income_mapping.txt')
     finance_mapping = load_mapping_file('api_txt/format/h_finance_mapping.txt')
     
     try:
         # 下载资产负债表
         balance_sheet = ak.stock_financial_hk_report_em(stock=stock_code, symbol="资产负债表", indicator="年度")
+        
+        # 验证数据列是否存在
+        required_columns = ['SECUCODE', 'SECURITY_NAME_ABBR', 'STD_ITEM_NAME', 'STD_ITEM_CODE', 'REPORT_DATE', 'AMOUNT']
+        if not all(col in balance_sheet.columns for col in required_columns):
+            raise ValueError(f"资产负债表数据缺少必要列，现有列: {balance_sheet.columns.tolist()}")
 
+        # 转换并保存资产负债表
+        balance_sheet = balance_sheet.pivot(
+            index=['SECUCODE', 'SECURITY_NAME_ABBR', 'STD_ITEM_CODE', 'STD_ITEM_NAME'],
+            columns='REPORT_DATE',
+            values='AMOUNT'
+        ).reset_index()
+        date_columns = sorted([col for col in balance_sheet.columns if col not in ['SECUCODE', 'SECURITY_NAME_ABBR', 'STD_ITEM_CODE', 'STD_ITEM_NAME']], reverse=True)
+        balance_sheet = balance_sheet[['SECUCODE', 'SECURITY_NAME_ABBR', 'STD_ITEM_CODE', 'STD_ITEM_NAME'] + date_columns]
+        balance_sheet = balance_sheet.sort_values('STD_ITEM_CODE')
         balance_sheet.to_csv(f'finance/{stock_code}_hk_balance_sheet.csv', index=False, encoding='utf-8')
         
-        # 下载现金流量表
+        # 下载并转换现金流量表
         cash_flow = ak.stock_financial_hk_report_em(stock=stock_code, symbol="现金流量表", indicator="年度")
-
+        
+        # 验证数据列是否存在
+        if not all(col in cash_flow.columns for col in required_columns):
+            raise ValueError(f"现金流量表数据缺少必要列，现有列: {cash_flow.columns.tolist()}")
+            
+        cash_flow = cash_flow.pivot(
+            index=['SECUCODE', 'SECURITY_NAME_ABBR', 'STD_ITEM_CODE', 'STD_ITEM_NAME'],
+            columns='REPORT_DATE',
+            values='AMOUNT'
+        ).reset_index()
+        date_columns = sorted([col for col in cash_flow.columns if col not in ['SECUCODE', 'SECURITY_NAME_ABBR', 'STD_ITEM_CODE', 'STD_ITEM_NAME']], reverse=True)
+        cash_flow = cash_flow[['SECUCODE', 'SECURITY_NAME_ABBR', 'STD_ITEM_CODE', 'STD_ITEM_NAME'] + date_columns]
+        cash_flow = cash_flow.sort_values('STD_ITEM_CODE')
         cash_flow.to_csv(f'finance/{stock_code}_hk_cash_flow.csv', index=False, encoding='utf-8')
         
-        # 下载利润表
+        # 下载并转换利润表
         income_statement = ak.stock_financial_hk_report_em(stock=stock_code, symbol="利润表", indicator="年度")
-
+        
+        # 验证数据列是否存在
+        if not all(col in income_statement.columns for col in required_columns):
+            raise ValueError(f"利润表数据缺少必要列，现有列: {income_statement.columns.tolist()}")
+            
+        income_statement = income_statement.pivot(
+            index=['SECUCODE', 'SECURITY_NAME_ABBR', 'STD_ITEM_CODE', 'STD_ITEM_NAME'],
+            columns='REPORT_DATE',
+            values='AMOUNT'
+        ).reset_index()
+        date_columns = sorted([col for col in income_statement.columns if col not in ['SECUCODE', 'SECURITY_NAME_ABBR', 'STD_ITEM_CODE', 'STD_ITEM_NAME']], reverse=True)
+        income_statement = income_statement[['SECUCODE', 'SECURITY_NAME_ABBR', 'STD_ITEM_CODE', 'STD_ITEM_NAME'] + date_columns]
+        income_statement = income_statement.sort_values('STD_ITEM_CODE')
         income_statement.to_csv(f'finance/{stock_code}_hk_income_statement.csv', index=False, encoding='utf-8')
         
         # 下载财务指标
